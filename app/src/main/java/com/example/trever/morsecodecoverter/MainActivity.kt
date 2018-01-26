@@ -26,18 +26,18 @@ class MainActivity : AppCompatActivity() {
                     .setAction("Action", null).show()
         }
         mTextView.movementMethod = ScrollingMovementMethod()
-        testButton.setOnClickListener {view ->
+        testButton.setOnClickListener { _ ->
             appendTextAndScroll(inputText.text.toString())
             hideKeyboard()
         }
 
     }
 
-        fun Activity.hideKeyboard() {
+        private fun Activity.hideKeyboard() {
             hideKeyboard(if (currentFocus == null) View(this) else currentFocus)
         }
 
-        fun Context.hideKeyboard(view: View) {
+        private fun Context.hideKeyboard(view: View) {
             val inputMethodManager = getSystemService(Activity.INPUT_METHOD_SERVICE) as InputMethodManager
             inputMethodManager.hideSoftInputFromWindow(view.windowToken, 0)
         }
