@@ -6,7 +6,6 @@ import android.os.Bundle
 import android.support.design.widget.Snackbar
 import android.support.v7.app.AppCompatActivity
 import android.text.method.ScrollingMovementMethod
-import android.util.Log
 import android.view.Menu
 import android.view.MenuItem
 import android.view.View
@@ -34,17 +33,30 @@ class MainActivity : AppCompatActivity() {
             hideKeyboard()
         }
 
-        showCodes.setOnClickListener {
+        showCodesButton.setOnClickListener {
             showCodes()
+            hideKeyboard()
         }
 
-        buildDictsWithJSON(loadMorseJSON())
+        translateButton.setOnClickListener {
+            appendTextAndScroll("\nTranslation: ")
+            appendTextAndScroll(inputText.text.toString())
+            translationMainDriver(inputText.text.toString())
+            hideKeyboard()
+        }
+
+        buildDictsWithJSON(jsonObj = loadMorseJSON())
     }
+    //*** end of onCreate ***
 
-    var letToCodeDict: HashMap<String, String> = HashMap()
-    var codeToLetDict: HashMap<String, String> = HashMap()
+    ////////////////////Functions//////////////////////
 
-    fun buildDictsWithJSON(jsonObj : JSONObject){
+    // Builds dictionaries from jsonObj built by loadMorseJSON()
+
+    private var letToCodeDict: HashMap<String, String> = HashMap()
+    private var codeToLetDict: HashMap<String, String> = HashMap()
+
+    private fun buildDictsWithJSON(jsonObj : JSONObject){
 
         for(k in jsonObj.keys()){
             val code = jsonObj.getString(k)
@@ -54,33 +66,73 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    fun showCodes(){
-        appendTextAndScroll("Here are the codes")
-        for(k in letToCodeDict.keys.sorted())
-            appendTextAndScroll("$k: ${letToCodeDict[k]}")
-    }
+    //Makes JSONSbject from the morse.json file in the assets folder
 
-    fun loadMorseJSON() : JSONObject {
+    private fun loadMorseJSON() : JSONObject {
         val filePath = "morse.json"
 
         val jsonstr = application.assets.open(filePath).bufferedReader().use{
             it.readText()
         }
 
-        val jsonObj = JSONObject(jsonstr.substring(jsonstr.indexOf("{"), jsonstr.lastIndexOf("}") + 1))
-
-        return jsonObj
+        return JSONObject(jsonstr.substring(jsonstr.indexOf("{"), jsonstr.lastIndexOf("}") + 1))
     }
 
-    private fun Activity.hideKeyboard() {
-        hideKeyboard(if (currentFocus == null) View(this) else currentFocus)
+    private fun translationMainDriver(text: String) {
+        if(isMorseCode(text))
+            convertMorseToLet(text)
+        else
+            convertLetToMorse(text)
+
     }
 
-    private fun Context.hideKeyboard(view: View) {
-        val inputMethodManager = getSystemService(Activity.INPUT_METHOD_SERVICE) as InputMethodManager
-        inputMethodManager.hideSoftInputFromWindow(view.windowToken, 0)
+    private fun isMorseCode(text : String) : Boolean {
+        for (c in text) {
+            return !(c != ' ' && c != '-' && c != '.' && c != '/')
+        }
+        return true
     }
 
+    private fun convertLetToMorse(text: String) {
+        var convertedText = ""
+        val lowerText = text.toLowerCase()
+
+        for ( c in lowerText) {
+            convertedText += when {
+                c == ' ' -> "/ "
+                letToCodeDict.containsKey(c.toString()) -> letToCodeDict[c.toString()] + " "
+                else -> "?"
+            }
+        }
+        appendTextAndScroll(convertedText)
+    }
+
+    private fun convertMorseToLet(text: String){
+        var convertedText = ""
+        val lowerText = text.toLowerCase()
+        val textArray = lowerText.split(" ")
+
+        for( c in textArray){
+            convertedText += when {
+                c == "/" -> " "
+                codeToLetDict.containsKey(c) -> codeToLetDict[c]
+                else -> "?"
+            }
+        }
+        appendTextAndScroll(convertedText)
+    }
+
+    ////////////////////End Functions///////////////////
+
+    //////////////////Button Functions//////////////////
+
+    private fun showCodes(){
+        appendTextAndScroll("Here are the codes")
+        for(k in letToCodeDict.keys.sorted())
+            appendTextAndScroll("$k: ${letToCodeDict[k]}")
+    }
+
+    // main output driver to mTextView
     private fun appendTextAndScroll(text: String) {
         if (mTextView != null) {
             mTextView.append(text + "\n")
@@ -93,6 +145,18 @@ class MainActivity : AppCompatActivity() {
             }
         }
     }
+
+    //Hides keyboard
+    private fun Activity.hideKeyboard() {
+        hideKeyboard(if (currentFocus == null) View(this) else currentFocus)
+    }
+
+    private fun Context.hideKeyboard(view: View) {
+        val inputMethodManager = getSystemService(Activity.INPUT_METHOD_SERVICE) as InputMethodManager
+        inputMethodManager.hideSoftInputFromWindow(view.windowToken, 0)
+    }
+    /////////////////End Button Functions/////////////////
+
 
 
 

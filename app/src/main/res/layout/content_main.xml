@@ -25,7 +25,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="Test"
-        app:layout_constraintBaseline_toBaselineOf="@+id/showCodes"
+        app:layout_constraintBaseline_toBaselineOf="@+id/showCodesButton"
         app:layout_constraintStart_toStartOf="@+id/inputText" />
 
     <EditText
@@ -47,7 +47,7 @@
         android:id="@+id/mTextView"
         android:layout_width="0dp"
         android:layout_height="0dp"
-        android:layout_marginBottom="8dp"
+        android:layout_marginBottom="7dp"
         android:layout_marginEnd="8dp"
         android:layout_marginStart="8dp"
         android:layout_marginTop="8dp"
@@ -67,12 +67,22 @@
         app:layout_constraintTop_toBottomOf="@+id/testButton" />
 
     <Button
-        android:id="@+id/showCodes"
+        android:id="@+id/showCodesButton"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="44dp"
         android:text="CODES"
         app:layout_constraintStart_toEndOf="@+id/testButton"
         app:layout_constraintTop_toTopOf="@+id/inputText" />
+
+    <Button
+        android:id="@+id/translateButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="8dp"
+        android:layout_marginEnd="8dp"
+        android:text="Translate"
+        app:layout_constraintBottom_toTopOf="@+id/mTextView"
+        app:layout_constraintEnd_toEndOf="@+id/inputText" />
 
 </android.support.constraint.ConstraintLayout>
