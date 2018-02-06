@@ -6,6 +6,7 @@ import android.os.Bundle
 import android.support.design.widget.Snackbar
 import android.support.v7.app.AppCompatActivity
 import android.text.method.ScrollingMovementMethod
+import android.util.Log
 import android.view.Menu
 import android.view.MenuItem
 import android.view.View
@@ -13,6 +14,7 @@ import android.view.inputmethod.InputMethodManager
 
 import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.android.synthetic.main.content_main.*
+import org.json.JSONObject
 
 class MainActivity : AppCompatActivity() {
 
@@ -20,27 +22,64 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
         setSupportActionBar(toolbar)
+        mTextView.movementMethod = ScrollingMovementMethod()
 
         fab.setOnClickListener { view ->
             Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
                     .setAction("Action", null).show()
         }
-        mTextView.movementMethod = ScrollingMovementMethod()
+
         testButton.setOnClickListener { _ ->
             appendTextAndScroll(inputText.text.toString())
             hideKeyboard()
         }
 
+        showCodes.setOnClickListener {
+            showCodes()
+        }
+
+        buildDictsWithJSON(loadMorseJSON())
     }
 
-        private fun Activity.hideKeyboard() {
-            hideKeyboard(if (currentFocus == null) View(this) else currentFocus)
+    var letToCodeDict: HashMap<String, String> = HashMap()
+    var codeToLetDict: HashMap<String, String> = HashMap()
+
+    fun buildDictsWithJSON(jsonObj : JSONObject){
+
+        for(k in jsonObj.keys()){
+            val code = jsonObj.getString(k)
+
+            letToCodeDict.put(k, code)
+            codeToLetDict.put(code, k)
+        }
+    }
+
+    fun showCodes(){
+        appendTextAndScroll("Here are the codes")
+        for(k in letToCodeDict.keys.sorted())
+            appendTextAndScroll("$k: ${letToCodeDict[k]}")
+    }
+
+    fun loadMorseJSON() : JSONObject {
+        val filePath = "morse.json"
+
+        val jsonstr = application.assets.open(filePath).bufferedReader().use{
+            it.readText()
         }
 
-        private fun Context.hideKeyboard(view: View) {
-            val inputMethodManager = getSystemService(Activity.INPUT_METHOD_SERVICE) as InputMethodManager
-            inputMethodManager.hideSoftInputFromWindow(view.windowToken, 0)
-        }
+        val jsonObj = JSONObject(jsonstr.substring(jsonstr.indexOf("{"), jsonstr.lastIndexOf("}") + 1))
+
+        return jsonObj
+    }
+
+    private fun Activity.hideKeyboard() {
+        hideKeyboard(if (currentFocus == null) View(this) else currentFocus)
+    }
+
+    private fun Context.hideKeyboard(view: View) {
+        val inputMethodManager = getSystemService(Activity.INPUT_METHOD_SERVICE) as InputMethodManager
+        inputMethodManager.hideSoftInputFromWindow(view.windowToken, 0)
+    }
 
     private fun appendTextAndScroll(text: String) {
         if (mTextView != null) {
