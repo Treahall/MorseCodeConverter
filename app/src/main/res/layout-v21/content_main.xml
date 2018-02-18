@@ -22,9 +22,9 @@
 
     <Button
         android:id="@+id/testButton"
-        android:layout_width="82dp"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginStart="8dp"
+        android:layout_marginStart="16dp"
         android:backgroundTint="?attr/colorButtonNormal"
         android:text="Test"
         app:layout_constraintBaseline_toBaselineOf="@+id/showCodesButton"
@@ -34,8 +34,8 @@
         android:id="@+id/inputText"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:layout_marginEnd="8dp"
-        android:layout_marginStart="8dp"
+        android:layout_marginEnd="16dp"
+        android:layout_marginStart="16dp"
         android:layout_marginTop="7dp"
         android:ems="10"
         android:hint="Enter Text Here"
@@ -99,6 +99,6 @@
         app:layout_constraintBottom_toBottomOf="@+id/showCodesButton"
         app:layout_constraintStart_toEndOf="@+id/showCodesButton"
         app:layout_constraintTop_toTopOf="@+id/showCodesButton"
-        app:srcCompat="@android:drawable/ic_media_play" />
+        app:srcCompat="@android:drawable/ic_media_play" android:contentDescription="TODO" />
 
 </android.support.constraint.ConstraintLayout>
