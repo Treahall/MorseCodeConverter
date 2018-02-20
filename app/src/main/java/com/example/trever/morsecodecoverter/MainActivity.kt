@@ -24,6 +24,16 @@ import org.json.JSONObject
 import java.lang.Math.round
 import java.util.*
 import kotlin.concurrent.timerTask
+import android.widget.Toast
+import android.app.PendingIntent
+import android.telephony.SmsManager
+import android.content.BroadcastReceiver
+
+
+
+
+val sampleRate= 44100
+
 
 class MainActivity : AppCompatActivity() {
 
@@ -35,6 +45,7 @@ class MainActivity : AppCompatActivity() {
         setContentView(R.layout.activity_main)
         setSupportActionBar(toolbar)
         mTextView.movementMethod = ScrollingMovementMethod()
+        //val morsePitch = prefs!!.getString("morse_pitch", "550.0").toDouble()
 
         fab.setOnClickListener { view ->
             Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
@@ -59,9 +70,27 @@ class MainActivity : AppCompatActivity() {
         }
 
         Play.setOnClickListener {
-            playString(" / --- ...")
+            var text = inputText.text.toString()
+            if(!isMorseCode(text))
+            {
+                var convertedText = ""
+                val lowerText = text.toLowerCase()
 
+                for (c in lowerText) {
+                    convertedText += when {
+                        c == ' ' -> "/ "
+                        letToCodeDict.containsKey(c.toString()) -> letToCodeDict[c.toString()] + " "
+                        else -> "?"
+                    }
+                }
+                text = convertedText
+            }
+            playString(text)
             hideKeyboard()
+        }
+
+        fab.setOnClickListener {
+            sendSMS("7313585007", "Hello")
         }
 
         buildDictsWithJSON(jsonObj = loadMorseJSON())
@@ -74,6 +103,7 @@ class MainActivity : AppCompatActivity() {
 
     private var letToCodeDict: HashMap<String, String> = HashMap()
     private var codeToLetDict: HashMap<String, String> = HashMap()
+
 
     private fun buildDictsWithJSON(jsonObj : JSONObject){
 
@@ -141,16 +171,14 @@ class MainActivity : AppCompatActivity() {
         appendTextAndScroll(convertedText)
     }
 
-    //functions to make a beep
+    /////functions to make a beep
 
     private val dotLength:Int = 50
     private val dashLength:Int = dotLength * 3
-    //val morsePitch = prefs!!.getString("morse_pitch", "550").toInt()
+    //val morsePitch = prefs!!.getString("morse_pitch", "550.0").toDouble()
 
     private val dotSoundBuffer: ShortArray = genSineWaveSoundBuffer(550.0, dotLength)
     private val dashSoundBuffer: ShortArray = genSineWaveSoundBuffer(550.0, dashLength)
-
-    private val sampleRate= 44100
 
     private fun playString(s: String, i: Int = 0){
         if(i > s.length - 1)
@@ -240,8 +268,57 @@ class MainActivity : AppCompatActivity() {
         mAudioTrack.play(); mAudioTrack.write(nBuffer, 0, minBufferSize)
     }
 
-    //End functions for beeps
+    /////End functions for beeps
 
+    /////Functions for SMS sending
+
+    private fun sendSMS(phoneNumber: String, message: String) {
+        val sentPendingIntents = ArrayList<PendingIntent>()
+        val deliveredPendingIntents = ArrayList<PendingIntent>()
+        val sentPI = PendingIntent.getBroadcast(applicationContext, 0,
+                Intent(applicationContext, SmsSentReceiver::class.java), 0)
+        val deliveredPI = PendingIntent.getBroadcast(applicationContext, 0,
+                Intent(applicationContext, SmsDeliveredReceiver::class.java), 0)
+        try {
+            val sms = SmsManager.getDefault()
+            val mSMSMessage = sms.divideMessage(message)
+            for (i in 0 until mSMSMessage.size) {
+                sentPendingIntents.add(i, sentPI)
+                deliveredPendingIntents.add(i, deliveredPI)
+            }
+            sms.sendMultipartTextMessage(phoneNumber, null, mSMSMessage,
+                    sentPendingIntents, deliveredPendingIntents)
+
+        } catch (e: Exception) {
+
+            e.printStackTrace()
+            Toast.makeText(baseContext, "SMS sending failed...", Toast.LENGTH_SHORT).show()
+        }
+
+    }
+
+    inner class SmsDeliveredReceiver : BroadcastReceiver() {
+        override fun onReceive(context: Context, arg1: Intent) {
+            when (resultCode) {
+                Activity.RESULT_OK -> Toast.makeText(context, "SMS delivered", Toast.LENGTH_SHORT).show()
+                Activity.RESULT_CANCELED -> Toast.makeText(context, "SMS not delivered", Toast.LENGTH_SHORT).show()
+            }
+        }
+    }
+
+    inner class SmsSentReceiver : BroadcastReceiver() {
+        override fun onReceive(context: Context, arg1: Intent) {
+            when (resultCode) {
+                Activity.RESULT_OK -> Toast.makeText(context, "SMS Sent", Toast.LENGTH_SHORT).show()
+                SmsManager.RESULT_ERROR_GENERIC_FAILURE -> Toast.makeText(context, "SMS generic failure", Toast.LENGTH_SHORT)
+                        .show()
+                SmsManager.RESULT_ERROR_NO_SERVICE -> Toast.makeText(context, "SMS no service", Toast.LENGTH_SHORT)
+                        .show()
+                SmsManager.RESULT_ERROR_NULL_PDU -> Toast.makeText(context, "SMS null PDU", Toast.LENGTH_SHORT).show()
+                SmsManager.RESULT_ERROR_RADIO_OFF -> Toast.makeText(context, "SMS radio off", Toast.LENGTH_SHORT).show()
+            }
+        }
+    }
     ////////////////////End Functions///////////////////
 
     //////////////////Button Functions//////////////////
