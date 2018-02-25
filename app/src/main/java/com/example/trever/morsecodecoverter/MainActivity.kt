@@ -57,19 +57,19 @@ class MainActivity : AppCompatActivity() {
             hideKeyboard()
         }
 
-        showCodesButton.setOnClickListener {
+        showCodesButton.setOnClickListener { _ ->
             showCodes()
             hideKeyboard()
         }
 
-        translateButton.setOnClickListener {
+        translateButton.setOnClickListener { _ ->
             appendTextAndScroll("\nTranslation: ")
             appendTextAndScroll(inputText.text.toString())
             translationMainDriver(inputText.text.toString())
             hideKeyboard()
         }
 
-        Play.setOnClickListener {
+        Play.setOnClickListener { _ ->
             var text = inputText.text.toString()
             if(!isMorseCode(text))
             {
@@ -89,7 +89,7 @@ class MainActivity : AppCompatActivity() {
             hideKeyboard()
         }
 
-        fab.setOnClickListener {
+        fab.setOnClickListener { _ ->
             sendSMS("7313585007", "Hello")
         }
 
